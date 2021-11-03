@@ -21,7 +21,7 @@ struct Cultivo{
   
 };
 
-void cambiaCultivo(Cultivo* cult, int codigo_planta);
+void cambiaCultivo(Cultivo*,int);
 
 //recibe #pin y tiempo de activacion
 void ActivaBombaAgua( int, int);
