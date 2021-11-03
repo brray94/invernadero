@@ -30,6 +30,7 @@ void ActivaBombaAgua( int, int);
 void CambiaEstadoVentilador(int, bool );
 
 // crear metodo que reciba la lectura del sensor y verifique si esta en el rango de la planta
+void verificarHumedad (float, Cultivo*);
 // retorne verdadero o falso, usar ese metodo para activar las bombas de agua
 // igual otro que verifique la humedad del aire y active los ventiladores
 

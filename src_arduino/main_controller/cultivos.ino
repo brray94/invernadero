@@ -135,6 +135,21 @@ void cambiaCultivo(Cultivo* cult, int codigo_planta){
   }
 
   // crear metodo verificar estado, este debe llamar a los metodos "CambiaEstadoVentilador" y "ActivaBombaAgua" segun necesidad
+
+  void verificarHumedad(float valorHumedad, Cultivo* cult){
+    //creo que con estas variables guardo el valor de la humedad del cultivo
+    float humedadMax=cult->humedad_max;
+    float humedadMin=cult->humedad_min;
+
+    //condicional para verificar que el valor leído por el sensor esté entre el rango de minimo y maximo
+    if (valorHumedad>humedadMin && valorHumedad<humedadMax){
+     //no sé que colocar aqui 
+    }else if (valorHumedad < humedadMin){
+      ActivaBombaAgua();//no sé qué pin mandarle ni qué tiempo
+    }else if (valorHumedad > humedadMax){
+    CambiaEstadoVentilador();//supongo que se enciende el ventilador como para secarlo un poquito jsjsjs, igual no sé que mandarle
+    }
+  }
   
   // crear metodos que lean los sensores (iterativamente), pensandolo podemos tener un array de cultivos (de 3 puestos) y 
   // recorrerlo con el metodo para verificar los valores de cada uno 
