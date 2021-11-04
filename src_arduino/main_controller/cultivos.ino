@@ -136,21 +136,34 @@ void cambiaCultivo(Cultivo* cult, int codigo_planta){
 
   // crear metodo verificar estado, este debe llamar a los metodos "CambiaEstadoVentilador" y "ActivaBombaAgua" segun necesidad
 
-  void verificarHumedad(float valorHumedad, Cultivo* cult){
-    //creo que con estas variables guardo el valor de la humedad del cultivo
-    float humedadMax=cult->humedad_max;
-    float humedadMin=cult->humedad_min;
+  int verificarHumedad(float valorHumedad, Cultivo* cult){
+    // devuelve -1 si esta por debajo del valor min, 0 si se encuentra en rango y 1 si hay humedad de mas 
 
+    
     //condicional para verificar que el valor leído por el sensor esté entre el rango de minimo y maximo
-    if (valorHumedad>humedadMin && valorHumedad<humedadMax){
-     //no sé que colocar aqui 
-    }else if (valorHumedad < humedadMin){
-      ActivaBombaAgua();//no sé qué pin mandarle ni qué tiempo
-    }else if (valorHumedad > humedadMax){
-    CambiaEstadoVentilador();//supongo que se enciende el ventilador como para secarlo un poquito jsjsjs, igual no sé que mandarle
+    if ((valorHumedad >= cult->humedad_min) && (valorHumedad <= cult->humedad_max)){
+      return 0;      
+    }else if (valorHumedad < cult->humedad_min){
+      return -1;
+    }else if (valorHumedad > cult->humedad_max){
+      return 1;
+    }
+  }
+
+
+  // leer sensor analogo tierra
+  int leerHumedadSuelo(int pinSensor){
+    int tmpVal = analogRead(pinSensor);
+
+    if(tmpVal > 1000){
+      // posible error ocurrido
+      return -1;
+    }else{
+      // el valor esta al reves y entre mas se acerca a 0 realmente es mas humedo, por eso la operacion
+      // cuando deberiamos estar obteniendo el porcentaje de humedad del suelo
+      return (100-(tmpVal/10)); // normaliza para rango de 0 - 100
     }
   }
   
-  // crear metodos que lean los sensores (iterativamente), pensandolo podemos tener un array de cultivos (de 3 puestos) y 
-  // recorrerlo con el metodo para verificar los valores de cada uno 
+  // crear metodos que lean los sensores 
   

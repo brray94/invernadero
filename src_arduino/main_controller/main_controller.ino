@@ -15,6 +15,8 @@
 #define RELAY_BOMBA_1 16 // pin 16 para bomba agua 1
 #define RELAY_BOMBA_2 17 // pin 17 para bomba agua 2
 #define RELAY_BOMBA_3 5 // pin 5 para bomba agua 3
+#define HUMEDAD_SUELO_1 32 // pin 32 para sensor 1
+#define HUMEDAD_SUELO_2 33 // pin 33 para sensor 2
 
 // ota config
 #include "ota.h"
@@ -45,10 +47,7 @@ void setup() {
   // Se inicializan los pins encargados del relay
   pinMode(RELAY_VENTILADOR, OUTPUT);
 
-  // Se inicializan los 3 cultivos ( todo: buscar la manera de que sea dinamico)
-  Cultivo cultivo_1;
-  Cultivo cultivo_2;
-  Cultivo cultivo_3;
+  
   
   //imprime por serial ip del invernadero
   Serial.println("Invernadero dir ip : ");
@@ -67,40 +66,70 @@ void setup() {
     Serial.println("! ! !  Error al crear session sistema de reportes (SMTP) ! ! !");
   }
 
+
 }
 
 void loop() {
-  // asca va el codigo que va a ejecutar indefinidamente
+   // todo: mover esto al setup, para evitar la re-inicializacion por cada vuelta al loop ( mayor consumo energia)
+  // Se crea el array para los 3 cultivos 
+  Cultivo arrCult[3];
 
+  // se inicializan los cultivos con valores para pruebas
+  cambiaCultivo(&arrCult[0], 7); // se asigna espinaca a cultivo 1 
+  cambiaCultivo(&arrCult[1], 1); // se asigna tomate a cultivo 2
+  cambiaCultivo(&arrCult[2], 4); // se asigna melon a cultivo 3
+  //////////////////
 
+  
   // Para enviar el correo seria
   //enviarMensaje("texto del mensaje", &smtp);  nota: quizas sobrecargar funcion para distinto des-
   //tinatario o encabezado  
   // 
   ArduinoOTA.handle();
 
-  digitalWrite(RELAY_VENTILADOR, LOW); 
-  delay(2000); // tiempo espera dos segundos
-
   
-  /*
-  float humSensor1 = sensorDht_1.readHumidity();
+  // arrCult  array
+  for(int i = 0; i < 3; i++){
+    // pd este codigo va a ser feo por el sensor faltante 
+    float tmpHumedadAire;
+    float tmpHumedadSuelo;
+    float tmpTemperatura;
+    int tmpPinBombaAgua;
+    
+    if(i == 0){ // primera planta
+      tmpHumedadAire = sensorDht_1.readHumidity();
+      tmpHumedadSuelo = leerHumedadSuelo(HUMEDAD_SUELO_1);
+      tmpTemperatura = sensorDht_1.readTemperature();
+      tmpPinBombaAgua = RELAY_BOMBA_1;
+      
+    }else if( i == 1){ // segundo nivel invernadero
+      // por la falta del sensor, se promedian los resultados de los sensores que hay
+      tmpHumedadAire = (sensorDht_1.readHumidity()+sensorDht_2.readHumidity())/2;
+      tmpHumedadSuelo = (leerHumedadSuelo(HUMEDAD_SUELO_1)+leerHumedadSuelo(HUMEDAD_SUELO_2))/2;
+      tmpTemperatura = (sensorDht_2.readTemperature()+sensorDht_1.readTemperature())/2;
+      tmpPinBombaAgua = RELAY_BOMBA_2;
+    }else{ // tercer nivel
+      tmpHumedadAire = sensorDht_2.readHumidity();
+      tmpHumedadSuelo = leerHumedadSuelo(HUMEDAD_SUELO_2);
+      tmpTemperatura = sensorDht_2.readTemperature();
+      tmpPinBombaAgua = RELAY_BOMBA_3;
+    }
+    
+    // verificar que este en valores optimos
 
-  verificaRangos( cultivo)
+    int intTmpRes = verificarHumedad(tmpHumedadSuelo, &arrCult[i]);
 
-  float tempSensor1 = sensorDht_1.readTemperature();*/
-  Serial.print("Sensor 1 data: ");
-  Serial.printf("Humidity: %f", sensorDht_1.readHumidity()  );
-  Serial.printf("Temperature: %f", sensorDht_1.readTemperature());
-  Serial.println("\n-------------------");
-  Serial.print("Sensor 2 data: ");
-  Serial.printf("Humidity: %f", sensorDht_2.readHumidity()  );
-  Serial.printf("Temperature: %f", sensorDht_2.readTemperature() );
-  Serial.println("\n\n-------------------");
-  Serial.printf("humedad min tomates : %f",TOMATES_HUMEDAD_MIN);
-  
-  digitalWrite(RELAY_VENTILADOR, HIGH);
-  delay(5000);
+    if( intTmpRes == -1){
+      // Se encuentra por debajo del optimo
+      ActivaBombaAgua(tmpPinBombaAgua, 2000); // se le pasan 2000 ms == 2 seg
+    }else if( intTmpRes == 1){
+      // se encuentra por encima del optimo, reportar al usuario y activar ventiladores
+      CambiaEstadoVentilador(RELAY_VENTILADOR, true);
+    }else{
+      CambiaEstadoVentilador(RELAY_VENTILADOR, false);
+    }
+    
+  }
 
-
+ 
 }

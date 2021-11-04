@@ -29,12 +29,16 @@ void ActivaBombaAgua( int, int);
 // recibe pin del ventilador y bool correspondiente a encendido/apagado
 void CambiaEstadoVentilador(int, bool );
 
-// crear metodo que reciba la lectura del sensor y verifique si esta en el rango de la planta
-void verificarHumedad (float, Cultivo*);
+//recibe la lectura del sensor y verifica si esta en el rango de la planta
+// devuelve -1 si esta por debajo del valor min, 0 si se encuentra en rango y 1 si hay humedad de mas 
+int verificarHumedad (float, Cultivo*);
 // retorne verdadero o falso, usar ese metodo para activar las bombas de agua
 // igual otro que verifique la humedad del aire y active los ventiladores
 
+// si es >1000 es mas seguro una falla, entonces reportar error
 
+// devuelve valor entre -1 y 100, siendo -1 error
+int leerHumedadSuelo(int);
 
 
 #endif
